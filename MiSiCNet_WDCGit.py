@@ -169,7 +169,7 @@ for fi in tqdm(range(1)):
                 # out_HR_avg = out_HR_avg * exp_weight + out_HR.detach() * (1 - exp_weight)
 
         #%%
-            total_loss = my_loss(img_noisy_torch, net1.dconv4[0].weight,100,out_spec)
+            total_loss = my_loss(img_noisy_torch, net1.dconv4[0].weight,LAMB,out_spec)
             total_loss.backward()
          
           

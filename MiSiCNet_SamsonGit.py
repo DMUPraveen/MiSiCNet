@@ -47,15 +47,10 @@ mat2 = scipy.io.loadmat(fname2)
 img_np_gt = mat2["Y_clean"]
 img_np_gt = img_np_gt.transpose(2,0,1)
 [p1, nr1, nc1] = img_np_gt.shape
-#%%
-# fname3  = "C:/Users/behnood/Desktop/VMCNN/Easy/A_true.mat"
-# mat3 = scipy.io.loadmat(fname3)
-# A_true_np = mat3["A_true"]
-# A_true_np = A_true_np.transpose(2,0,1)
-#%%
-# fname4  = "C:/Users/behnood/Desktop/VMCNN/Easy/E.mat"
-# mat4 = scipy.io.loadmat(fname4)
-# E_np = mat4["E"]
+print(img_np_gt.shape)
+
+DATASET = 'samson'
+
 rmax=3#E_np.shape[1] 
 #%%
 
@@ -63,6 +58,9 @@ tol2=1
 save_result=False
 from tqdm import tqdm
 
+LR = 0.001
+EPOCH = 8000
+LAMB = 100
 for fi in tqdm(range(1)):
     for fj in tqdm(range(tol2)):
             #%%
@@ -84,11 +82,11 @@ for fi in tqdm(range(1)):
         OPT_OVER = 'net' 
         
         # 
-        LR1 = 0.001
+        LR1 = LR
         show_every = 100
         exp_weight=0.99
         
-        num_iter1 = 8000
+        num_iter1 = EPOCH
         input_depth =  img_noisy_np.shape[0]
         class CAE_EndEst(nn.Module):
             def __init__(self):
@@ -169,21 +167,21 @@ for fi in tqdm(range(1)):
                 # out_HR_avg = out_HR_avg * exp_weight + out_HR.detach() * (1 - exp_weight)
 
         #%%
-            total_loss = my_loss(img_noisy_torch, net1.dconv4[0].weight,100,out_spec)
+            total_loss = my_loss(img_noisy_torch, net1.dconv4[0].weight,LAMB,out_spec)
             total_loss.backward()
          
           
 
             # print ('Iteration %05d    Loss %f   RMSE_LR: %f   RMSE_LR_avg: %f  SRE: %f SRE_avg: %f' % (i, total_loss.item(), RMSE_LR, RMSE_LR_avg, SRE, SRE_avg), '\r', end='')
-            if  PLOT and i % show_every == 0:
-                out_LR_np = out_LR.detach().cpu().squeeze().numpy()
-                out_avg_np = out_avg.detach().cpu().squeeze().numpy()
-                out_LR_np = np.clip(out_LR_np, 0, 1)
-                out_avg_np = np.clip(out_avg_np, 0, 1)    
-                f, ((ax1, ax2)) = plt.subplots(1, 2, sharey=True, figsize=(10,10))
-                ax1.imshow(np.stack((out_LR_np[2,:,:],out_LR_np[1,:,:],out_LR_np[0,:,:]),2))
-                ax2.imshow(np.stack((out_avg_np[2,:,:],out_avg_np[1,:,:],out_avg_np[0,:,:]),2))
-                plt.show()                 
+            # if  PLOT and i % show_every == 0:
+            #     out_LR_np = out_LR.detach().cpu().squeeze().numpy()
+            #     out_avg_np = out_avg.detach().cpu().squeeze().numpy()
+            #     out_LR_np = np.clip(out_LR_np, 0, 1)
+            #     out_avg_np = np.clip(out_avg_np, 0, 1)    
+            #     f, ((ax1, ax2)) = plt.subplots(1, 2, sharey=True, figsize=(10,10))
+            #     ax1.imshow(np.stack((out_LR_np[2,:,:],out_LR_np[1,:,:],out_LR_np[0,:,:]),2))
+            #     ax2.imshow(np.stack((out_avg_np[2,:,:],out_avg_np[1,:,:],out_avg_np[0,:,:]),2))
+            #     plt.show()                 
             i += 1       
             return total_loss
         net1.dconv4[0].weight=torch.nn.Parameter(E_torch.view(p1,rmax))       
@@ -198,17 +196,17 @@ for fi in tqdm(range(1)):
                 net1.dconv4[0].weight.data[net1.dconv4[0].weight >= 1] = 1
                 if j>0:
                   Eest=net1.dconv4[0].weight.detach().cpu().squeeze().numpy()
-                  if PLOT and j % show_every== 0: 
-                    plt.plot(Eest)
-                    plt.show()
+                  # if PLOT and j % show_every== 0: 
+                  #   plt.plot(Eest)
+                  #   plt.show()
                   
         out_avg_np = out_avg.detach().cpu().squeeze().numpy()
        
 
     #%%
-        if  save_result is True:
-                  scipy.io.savemat("Result/EestdB%01d%01d.mat" % (fi+2, fj+1),
-                                    {'Eest%01d%01d' % (fi+2, fj+1):Eest})
-                  scipy.io.savemat("Result/out_avg_npdB%01d%01d.mat" % (fi+2, fj+1),
-                                    {'out_avg_np%01d%01d' % (fi+2, fj+1):out_avg_np.transpose(1,2,0)})
-        #
+        # if  save_result is True:
+        #           scipy.io.savemat("Result/EestdB%01d%01d.mat" % (fi+2, fj+1),
+        #                             {'Eest%01d%01d' % (fi+2, fj+1):Eest})
+        #           scipy.io.savemat("Result/out_avg_npdB%01d%01d.mat" % (fi+2, fj+1),
+        #                             {'out_avg_np%01d%01d' % (fi+2, fj+1):out_avg_np.transpose(1,2,0)})
+        # #
