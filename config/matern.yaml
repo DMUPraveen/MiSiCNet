@@ -1,0 +1,4 @@
+dataset: Matern_Synthetic 
+lr: 0.001
+epoch: 8000
+lamb: 0.3

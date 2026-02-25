@@ -1,0 +1,4 @@
+dataset: urban_4
+lr: 0.001
+epoch: 8000
+lamb: 100
